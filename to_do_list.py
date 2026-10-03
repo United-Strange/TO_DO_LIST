@@ -36,24 +36,28 @@ def data_base_connection():
     
 def adding_task(cur, con, is_doneyet="no"):
     new_task = input("write your task: ")
-    task_time = time.localtime
     cur.execute("INSERT INTO list (task, is_done) VALUES (?,?)", (new_task, is_doneyet))
-    print(f"your task has succesfully added to your list in this {task_time}")
+    print(f"your task has succesfully added to your list")
     con.commit()
 
 
-def deleting_task():
+def deleting_task(cur, con):
     loop_trying = True
-    #SQL have yo show the all tasks
+    print(show_all_tasks(cur))
+    
     while loop_trying:
         try:
             delete_id_request = int(input("please write the task id that you want to delete: "))
-            loop_trying = False
+            cur.execute("DELETE FROM list WHERE id = ?", (delete_id_request,))
+            if cur.rowcount > 0:
+                con.commit()
+                loop_trying = False
+                print(f"you have succesfully deleted the {delete_id_request} id")
+            else:
+                print("this id does not exist!")
         except:
             print("please write a VALID NUMBER !")
-            loop_trying = True
-    #SQL have to delete that id
-    
+            
     
 def show_all_tasks(cur):
     result = cur.execute("SELECT * FROM list")
@@ -73,10 +77,12 @@ main_loop = True
 while main_loop:
     user_request = welcome()
     if user_request == 1:
-        show_all_tasks(cur)
+        tasks = show_all_tasks(cur)
+        print(tasks)
     elif user_request == 2:
         adding_task(cur, con)
     elif user_request == 3:
-        deleting_task()
+        deleting_task(cur, con)
     elif user_request == 4:
         main_loop = False
+
